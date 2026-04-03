@@ -3,7 +3,8 @@ import axios from 'axios'
 const axiosClient = axios.create({
   //http://localhost:8000/api/
   //https://shopii-backend-latest.onrender.com/api/
-  baseURL: 'http://localhost:8000/api/',
+  // https://trainai-ecommerce.onrender.com/api/
+  baseURL: 'https://trainai-ecommerce.onrender.com/api/',
 
   headers: {
     'Content-Type': 'application/json',
