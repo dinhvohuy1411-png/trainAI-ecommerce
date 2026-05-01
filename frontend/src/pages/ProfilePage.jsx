@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import axiosClient from '../api/axiosClient'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+
 function ProfilePage() {
   const [tab, setTab] = useState('profile')
   const [name, setName] = useState('')
@@ -32,6 +33,12 @@ function ProfilePage() {
   const [wards, setWards] = useState([])
 
   const [editingId, setEditingId] = useState(null)
+
+  // ===== THÊM STATE CHO HẠNG THÀNH VIÊN =====
+  const [membership, setMembership] = useState(null)
+  const [tiers, setTiers] = useState([])
+  const [nextTier, setNextTier] = useState(null)
+  // ==========================================
 
   const handleOpenAddForm = () => {
     setEditingId(null)
@@ -103,6 +110,7 @@ function ProfilePage() {
 
     setShowAddressForm(true)
   }
+
   const handleAvatarChange = (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -120,6 +128,7 @@ function ProfilePage() {
     setAvatar(file)
     setPreview(URL.createObjectURL(file))
   }
+
   const handleUpdateProfile = async () => {
     try {
       await axiosClient.put('/user/update', {
@@ -138,13 +147,19 @@ function ProfilePage() {
           },
         })
       }
-
+      const currentUser = JSON.parse(localStorage.getItem('USER_INFO'))
+      if (currentUser) {
+        const updatedUser = { ...currentUser, name: name }
+        localStorage.setItem('USER_INFO', JSON.stringify(updatedUser))
+      }
+      window.dispatchEvent(new Event('userUpdated')) // Gửi sự kiện để các tab khác cập nhật
       alert('Cập nhật thành công')
     } catch (err) {
       console.error(err)
       alert('Lỗi cập nhật')
     }
   }
+
   const formRow = (label, input) => (
     <div
       style={{
@@ -157,6 +172,7 @@ function ProfilePage() {
       <div style={{ flex: 1 }}>{input}</div>
     </div>
   )
+
   useEffect(() => {
     const fetchUser = async () => {
       const res = await axiosClient.get('/user')
@@ -170,9 +186,28 @@ function ProfilePage() {
         setPreview(avatarUrl)
       }
       setPhone(res.data.phone)
+
+      // Lấy dữ liệu hạng của User
+      setMembership(res.data.membership)
     }
+
+    const fetchTiers = async () => {
+      try {
+        const res = await axiosClient.get('/membership-tiers')
+        // Sắp xếp các hạng theo số tiền tăng dần
+        const sortedTiers = res.data.sort(
+          (a, b) => parseFloat(a.min_spent) - parseFloat(b.min_spent)
+        )
+        setTiers(sortedTiers)
+      } catch (error) {
+        console.error('Lỗi lấy danh sách hạng', error)
+      }
+    }
+
     fetchUser()
+    fetchTiers()
     fetchAddresses()
+
     const fetchProvinces = async () => {
       try {
         const res = await axios.get('https://provinces.open-api.vn/api/p/')
@@ -183,6 +218,18 @@ function ProfilePage() {
     }
     fetchProvinces()
   }, [])
+
+  // ===== LOGIC TÍNH TOÁN HẠNG TIẾP THEO =====
+  useEffect(() => {
+    if (tiers.length > 0) {
+      const currentSpent = parseFloat(membership?.total_spent || 0)
+      // Tìm hạng đầu tiên có min_spent > số tiền đã tiêu
+      const next = tiers.find((t) => parseFloat(t.min_spent) > currentSpent)
+      setNextTier(next)
+    }
+  }, [membership, tiers])
+  // ==========================================
+
   const handleProvince = async (code) => {
     if (!code) {
       setProvince('')
@@ -272,7 +319,7 @@ function ProfilePage() {
       alert('Cập nhật thành công!')
     } catch (err) {
       console.error(err)
-      alert('Lỗi cập nhật. Hãy kiểm tra lại Route PUT bên Laravel.')
+      alert('Lỗi cập nhật.')
     }
   }
   const deleteAddress = async (id) => {
@@ -281,7 +328,7 @@ function ProfilePage() {
       setAddresses(addresses.filter((addr) => addr.id !== id))
     } catch (err) {
       console.error(err)
-      alert('Lỗi xóa. Hãy kiểm tra lại Route DELETE bên Laravel.')
+      alert('Lỗi xóa.')
     }
   }
   const setDefaultAddress = async (id) => {
@@ -382,6 +429,85 @@ function ProfilePage() {
         {/* ===== HỒ SƠ ===== */}
         {tab === 'profile' && (
           <>
+            {/* GIAO DIỆN THẺ HẠNG THÀNH VIÊN */}
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: '20px',
+                borderRadius: '10px',
+                color: '#fff',
+                marginBottom: '30px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '15px',
+                }}
+              >
+                <h3 style={{ margin: 0, fontSize: '20px' }}>
+                  💎 Hạng hiện tại: {membership?.tier?.name || 'Thành Viên Mới'}
+                </h3>
+                <span
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    background: 'rgba(255,255,255,0.2)',
+                    padding: '5px 12px',
+                    borderRadius: '20px',
+                  }}
+                >
+                  Đã chi tiêu:{' '}
+                  {Number(membership?.total_spent || 0).toLocaleString('vi-VN')}{' '}
+                  đ
+                </span>
+              </div>
+
+              {nextTier ? (
+                <div>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '15px' }}>
+                    🔥 Mua thêm{' '}
+                    <strong>
+                      {(
+                        parseFloat(nextTier.min_spent) -
+                        parseFloat(membership?.total_spent || 0)
+                      ).toLocaleString('vi-VN')}{' '}
+                      đ
+                    </strong>{' '}
+                    để thăng hạng <strong>{nextTier.name}</strong>
+                  </p>
+                  {/* Progress bar */}
+                  <div
+                    style={{
+                      width: '100%',
+                      background: 'rgba(255,255,255,0.3)',
+                      height: '8px',
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${(parseFloat(membership?.total_spent || 0) / parseFloat(nextTier.min_spent)) * 100}%`,
+                        background: '#fff',
+                        height: '100%',
+                        borderRadius: '4px',
+                        transition: 'width 0.5s ease-in-out',
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ margin: 0, fontSize: '15px', color: '#ffd700' }}>
+                  🏆 Chúc mừng! Bạn đã đạt mức hạng cao nhất của Shop.
+                </p>
+              )}
+            </div>
+            {/* KẾT THÚC THẺ HẠNG */}
+
             <div style={{ display: 'flex', gap: '40px' }}>
               {/* LEFT - FORM */}
               <div style={{ flex: 1 }}>
@@ -458,6 +584,7 @@ function ProfilePage() {
           </>
         )}
 
+        {/* CÁC PHẦN CODE BÊN DƯỚI (ĐỊA CHỈ, MẬT KHẨU) */}
         {tab === 'address' && (
           <>
             <div

@@ -10,46 +10,69 @@ export default function ReviewSection({ productId, orderId, token }) {
   useEffect(() => {
     fetchReviews();
   }, [productId]);
-  const fetchReviews = async () => {
-    const res = await axiosClient.get("/reviews", {
-  params: { product_id: productId }
-});
-    setReviews(res.data);
+
+ const fetchReviews = async () => {
+  try {
+    // Đổi axios thành axiosClient và sửa lại route (bỏ /api/ đi nếu axiosClient đã có sẵn)
+    const res = await axiosClient.get("reviews", {
+      params: { product_id: productId }
+    });
+
+    console.log("API RESPONSE:", res.data);
+
+    if (Array.isArray(res.data)) {
+      setReviews(res.data);
+    } else if (Array.isArray(res.data.data)) {
+      setReviews(res.data.data);
+    } else {
+      setReviews([]);
+    }
+
+  } catch (error) {
+    console.error("Lỗi khi tải đánh giá:", error);
+    setReviews([]);
+  }
   };
   const submitReview = async () => {
-    if (!rating || !comment) {
-      alert("Vui lòng chọn sao và nhập nhận xét");
-      return;
+  if (!orderId) {
+    alert("Bạn chưa mua sản phẩm này");
+    return;
+  }
+
+  if (!rating || !comment) {
+    alert("Vui lòng chọn sao và nhập nhận xét");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    await axiosClient.post(
+  "/reviews", 
+  {
+    product_id: productId,
+    order_id: orderId,
+    rating,
+    comment,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}` // Thay đổi format nếu backend yêu cầu khác
     }
-    try {
-      setLoading(true);
+  }
+);
 
-     const data = {
-  product_id: productId,
-  rating,
-  comment,
-};
+    fetchReviews();
+    setComment("");
+    setRating(0);
 
-await axiosClient.post("/reviews", data);
-
-if (orderId) {
-  data.order_id = orderId;
-}
-
-await axiosClient.post("/reviews", data);
-
-      setRating(0);
-      setComment("");
-      fetchReviews();
   } catch (err) {
-  console.log(err.response.data);
-  console.log(err.response.data.errors);
-  console.log(err.response.data.errors.order_id);
-   alert("Lỗi");
+  console.error(err);
+  alert("Lỗi khi gửi đánh giá: " + (err.response?.data?.message || err.message));
   } finally {
     setLoading(false);
   }
-  };
+};
 
   return (
     <div className="review-box">
@@ -81,8 +104,7 @@ await axiosClient.post("/reviews", data);
 
       {/* Review List */}
       <div className="review-list">
-        <h4>Nhận xét ({reviews.length})</h4>
-
+        <h4>Các Lượt Đánh Giá ({Array.isArray(reviews) ? reviews.length : 0})</h4>
         {reviews.map((r) => (
           <div className="review-item" key={r.id}>
             <div className="review-header">
@@ -98,7 +120,6 @@ await axiosClient.post("/reviews", data);
                 ))}
               </div>
             </div>
-
             <p>{r.comment}</p>
             <small>{new Date(r.created_at).toLocaleDateString()}</small>
           </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import orderApi from '../api/orderApi'
-import axiosClient from '../api/axiosClient' // <--- Thêm import này để gọi API
+import axiosClient from '../api/axiosClient'
 import { Link, useNavigate } from 'react-router-dom'
 
 const OrderHistoryPage = () => {
@@ -8,7 +8,6 @@ const OrderHistoryPage = () => {
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
-  // Hàm xử lý khi nhấn nút Xem Shop
   const handleViewShop = (shopId) => {
     if (shopId) {
       navigate(`/shop/${shopId}`)
@@ -33,9 +32,6 @@ const OrderHistoryPage = () => {
     fetchOrders()
   }, [])
 
-  // ==========================================
-  // THÊM HÀM XỬ LÝ KHÁCH HÀNG BẤM "ĐÃ NHẬN HÀNG"
-  // ==========================================
   const handleConfirmReceipt = async (orderId) => {
     if (
       !window.confirm('Bạn xác nhận đã nhận được kiện hàng này nguyên vẹn chứ?')
@@ -43,10 +39,9 @@ const OrderHistoryPage = () => {
       return
 
     try {
-      // Gọi API cập nhật trạng thái
       await axiosClient.put(`/orders/${orderId}/complete`)
       alert('Cảm ơn bạn đã mua sắm! Đơn hàng đã được hoàn thành.')
-      fetchOrders() // Load lại danh sách đơn hàng để cập nhật UI
+      fetchOrders()
     } catch (error) {
       console.error('Lỗi khi xác nhận nhận hàng:', error)
       alert('Có lỗi xảy ra, vui lòng thử lại sau!')
@@ -89,7 +84,6 @@ const OrderHistoryPage = () => {
       }}
     >
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 15px' }}>
-        {/* Tiêu đề trang */}
         <div
           style={{
             backgroundColor: 'white',
@@ -118,12 +112,11 @@ const OrderHistoryPage = () => {
               backgroundColor: 'white',
               padding: '60px 0',
               borderRadius: '2px',
-              boxShadow: '0 1px 1px rgba(0,0,0,0.05)',
             }}
           >
             <img
               src="https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/orderlist/5fafbb923393b712b964.png"
-              alt="Empty Order"
+              alt="Empty"
               style={{ width: '100px', marginBottom: '20px' }}
             />
             <p style={{ color: '#555', fontSize: '16px' }}>
@@ -155,7 +148,7 @@ const OrderHistoryPage = () => {
                 boxShadow: '0 1px 1px rgba(0,0,0,0.05)',
               }}
             >
-              {/* Header: Shop & Trạng thái */}
+              {/* Header */}
               <div
                 style={{
                   display: 'flex',
@@ -179,7 +172,6 @@ const OrderHistoryPage = () => {
                       border: '1px solid #ddd',
                       background: 'white',
                       cursor: 'pointer',
-                      color: '#333',
                     }}
                   >
                     Xem Shop
@@ -211,7 +203,7 @@ const OrderHistoryPage = () => {
                 </div>
               </div>
 
-              {/* Danh sách sản phẩm */}
+              {/* Items List */}
               <div>
                 {order.items.map((item) => (
                   <div
@@ -237,7 +229,7 @@ const OrderHistoryPage = () => {
                           item.sku?.product?.image ||
                           'https://via.placeholder.com/150'
                         }
-                        alt={item.sku?.product?.name}
+                        alt="product"
                         style={{
                           width: '100%',
                           height: '100%',
@@ -246,31 +238,22 @@ const OrderHistoryPage = () => {
                       />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div
-                        style={{
-                          fontSize: '15px',
-                          marginBottom: '5px',
-                          color: '#333',
-                          lineHeight: '1.4',
-                        }}
-                      >
+                      <div style={{ fontSize: '15px', color: '#333' }}>
                         {item.sku?.product?.name || 'Sản phẩm không xác định'}
                       </div>
-                      <div
-                        style={{
-                          color: '#888',
-                          fontSize: '13px',
-                          marginBottom: '5px',
-                        }}
-                      >
+                      <div style={{ color: '#888', fontSize: '13px' }}>
                         Phân loại: {item.sku?.sku || 'Mặc định'}
                       </div>
                       <div style={{ fontSize: '13px' }}>x{item.quantity}</div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ color: '#ee4d2d', fontSize: '15px' }}>
-                        ₫{Number(item.price).toLocaleString()}
-                      </div>
+                    <div
+                      style={{
+                        textAlign: 'right',
+                        color: '#ee4d2d',
+                        fontSize: '15px',
+                      }}
+                    >
+                      ₫{Number(item.price).toLocaleString()}
                     </div>
                   </div>
                 ))}
@@ -313,9 +296,7 @@ const OrderHistoryPage = () => {
                     gap: '10px',
                   }}
                 >
-                  {/* ==============================================
-                      NÚT BẤM "ĐÃ NHẬN ĐƯỢC HÀNG" NẰM Ở ĐÂY
-                  ============================================== */}
+                  {/* --- NÚT ĐÃ NHẬN HÀNG ĐƯỢC CHÈN Ở ĐÂY --- */}
                   {order.status === 'shipping' && (
                     <button
                       onClick={() => handleConfirmReceipt(order.id)}
@@ -327,26 +308,39 @@ const OrderHistoryPage = () => {
                         borderRadius: '2px',
                         cursor: 'pointer',
                         minWidth: '150px',
+                        fontWeight: '500',
                       }}
                     >
                       Đã Nhận Được Hàng
                     </button>
                   )}
 
-                  <button id="btn-buy">Mua Lại</button>
                   <button
                     style={{
                       minWidth: '150px',
                       padding: '10px 0',
                       border: '1px solid #ddd',
                       background: 'white',
-                      color: '#555',
+                      borderRadius: '2px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Mua Lại
+                  </button>
+
+                  <button
+                    style={{
+                      minWidth: '150px',
+                      padding: '10px 0',
+                      border: '1px solid #ddd',
+                      background: 'white',
                       borderRadius: '2px',
                       cursor: 'pointer',
                     }}
                   >
                     Liên Hệ Shop
                   </button>
+
                   {order.status === 'pending' && (
                     <button
                       style={{
@@ -354,7 +348,6 @@ const OrderHistoryPage = () => {
                         padding: '10px 0',
                         border: '1px solid #ddd',
                         background: 'white',
-                        color: '#555',
                         borderRadius: '2px',
                         cursor: 'pointer',
                       }}
@@ -372,34 +365,25 @@ const OrderHistoryPage = () => {
   )
 }
 
-// --- Các hàm phụ trợ ---
+// Helper Functions
 const translateStatus = (status) => {
-  switch (status) {
-    case 'pending':
-      return 'Chờ Xác Nhận'
-    case 'confirmed':
-      return 'Chờ Lấy Hàng'
-    case 'shipping':
-      return 'Đang Giao'
-    case 'completed':
-      return 'Hoàn Thành'
-    case 'cancelled':
-      return 'Đã Hủy'
-    case 'refunded':
-      return 'Đã Hoàn Tiền'
-    default:
-      return status
+  const map = {
+    pending: 'Chờ Xác Nhận',
+    confirmed: 'Chờ Lấy Hàng',
+    shipping: 'Đang Giao',
+    completed: 'Hoàn Thành',
+    cancelled: 'Đã Hủy',
+    refunded: 'Đã Hoàn Tiền',
   }
+  return map[status] || status
 }
-
-const translatePaymentStatus = (status) => {
-  return status === 'paid' ? 'Đã Thanh Toán' : 'Chưa Thanh Toán'
-}
-
-const getStatusColor = (status) => {
-  if (status === 'completed') return '#26aa99' // Xanh lá
-  if (status === 'cancelled') return '#888' // Xám
-  return '#ee4d2d' // Cam
-}
+const translatePaymentStatus = (status) =>
+  status === 'paid' ? 'Đã Thanh Toán' : 'Chưa Thanh Toán'
+const getStatusColor = (status) =>
+  status === 'completed'
+    ? '#26aa99'
+    : status === 'cancelled'
+      ? '#888'
+      : '#ee4d2d'
 
 export default OrderHistoryPage

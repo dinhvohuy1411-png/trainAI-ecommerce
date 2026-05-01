@@ -54,12 +54,18 @@ class UserController extends Controller
     public function changePassword(Request $request)
     {
         $user = Auth::user();
-
         $request->validate([
             'old_password' => 'required',
-            'new_password' => 'required|min:6', 
+            'new_password' => [
+                'required',
+                'max:5',
+                'regex:/[A-Z]/'
+            ], 
+        ], [
+            'new_password.max' => 'Mật khẩu mới chỉ được phép có 5 ký tự.',
+            'new_password.regex' => 'Mật khẩu mới phải chứa 1 ký tự hoa.'
         ]);
-
+        
         if (!Hash::check($request->old_password, $user->password)) {
             throw ValidationException::withMessages([
                 'old_password' => ['Mật khẩu cũ không chính xác.']

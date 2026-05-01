@@ -136,23 +136,35 @@ function SellerRegister() {
 
       formData.append('name', name)
       formData.append('description', description)
-      formData.append('addresses', JSON.stringify(addresses))
+
+      const sellerAddr = addresses.map((addr) => ({
+        receiver: addr.receiver,
+        phone: addr.phone,
+        detail: addr.detail,
+        province: addr.provinceName,
+        district: addr.districtName || '',
+        ward: addr.wardName || '',
+      }))
+
+      formData.append('addresses', JSON.stringify(sellerAddr))
       if (logo) formData.append('logo', logo)
 
       const res = await axiosClient.post('/shops', formData)
       alert(res.data.message)
       Navigate('/')
     } catch (err) {
-      alert(err.response?.data?.message)
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        'Có lỗi không xác định xảy ra'
+      alert(errorMessage)
+      console.error('Lỗi chi tiết:', err)
       return
     }
   }
 
   return (
-    <div
-      className="seller-wrapper"
-      style={{ background: '#f5f5f5', padding: '30px 40px' }}
-    >
+    <div className="seller-wrapper">
       <div className="seller-box big">
         <div style={{ textAlign: 'center' }}>
           <h2>Đăng ký trở thành người bán</h2>
@@ -342,10 +354,10 @@ function SellerRegister() {
                           receiver,
                           phone,
                           detail: addressDetail,
-                          province,
+                          province: province,
                           district: district || '',
                           ward: ward || '',
-                          provinceName,
+                          provinceName: provinceName,
                           districtName: districtName || '',
                           wardName: wardName || '',
                         }

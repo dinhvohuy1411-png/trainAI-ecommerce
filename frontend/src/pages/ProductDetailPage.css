@@ -1,0 +1,142 @@
+/* ========================================= */
+/* GIAO DIỆN MẶC ĐỊNH (Desktop / Laptop)     */
+/* ========================================= */
+.product-detail-page {
+  padding: 40px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.product-detail-card {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.product-detail-grid {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.product-image-col {
+  flex: 1 1 400px;
+  max-width: 100%;
+}
+
+.product-info-col {
+  flex: 1.5 1 500px;
+  max-width: 100%;
+}
+
+.product-image-main {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.product-thumb {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.product-title {
+  font-size: 28px;
+  color: #0f172a;
+  margin-top: 0;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.product-price-box {
+  margin: 20px 0;
+  background: #fef2f2;
+  padding: 15px 20px;
+  border-radius: 8px;
+}
+
+.product-price-text {
+  font-size: 30px;
+  color: #ee4d2d;
+  font-weight: bold;
+}
+
+.btn-add-cart {
+  padding: 15px 40px;
+  font-size: 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  border: none;
+  transition: 0.2s;
+}
+
+/* ========================================= */
+/* GIAO DIỆN DÀNH CHO ĐIỆN THOẠI (Mobile)    */
+/* ========================================= */
+@media (max-width: 768px) {
+  .product-detail-page {
+    padding: 0px !important; /* Xóa sạch lề thừa bên ngoài, cho tràn viền */
+    background: white !important; /* Đồng bộ nền trắng cho giống App */
+  }
+
+  .product-detail-card {
+    padding: 15px !important; 
+    box-shadow: none !important; /* Tắt bóng mờ rườm rà */
+    border-radius: 0 !important;
+  }
+
+  .product-detail-grid {
+    gap: 10px !important;
+  }
+
+  /* Ép chiều cao ảnh chính lại, không cho nó chiếm hết màn hình */
+  .product-image-main {
+    max-height: 320px !important; /* Giới hạn chiều cao */
+    width: 100% !important;
+    object-fit: contain !important; /* Hiển thị trọn vẹn ảnh, không bị cắt */
+    background: #f8fafc !important; /* Phông nền xám nhạt đằng sau ảnh */
+    border: none !important;
+    border-radius: 8px !important;
+  }
+
+  .product-thumb {
+    width: 50px !important; /* Thu nhỏ ảnh phụ */
+    height: 50px !important;
+  }
+
+  .product-title {
+    font-size: 18px !important; /* Chữ tên sản phẩm nhỏ gọn lại */
+    margin-bottom: 5px !important;
+  }
+
+  .product-price-box {
+    padding: 8px 12px !important; /* Bóp nhỏ ô màu hồng chứa giá */
+    margin: 10px 0 !important;
+  }
+
+  .product-price-text {
+    font-size: 20px !important; /* Bóp nhỏ giá tiền */
+  }
+
+  /* Ép nhỏ các nút bấm Màu sắc, Kích cỡ do bạn đang dùng Inline-style */
+  .product-info-col button {
+    font-size: 13px !important; 
+    padding: 6px 12px !important; 
+  }
+
+  /* Nút thêm vào giỏ hàng riêng biệt */
+  .btn-add-cart {
+    width: 100% !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+    margin-top: 10px !important;
+  }
+}

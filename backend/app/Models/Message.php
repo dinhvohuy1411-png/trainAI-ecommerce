@@ -10,10 +10,11 @@ class Message extends Model
     use HasFactory;
     protected $guarded = [];
 
+    const UPDATED_AT = null; // ← thêm dòng này
+
     public function conversation()
     {
         return $this->belongsTo(Conversation::class);
     }
-
 }
 ?>

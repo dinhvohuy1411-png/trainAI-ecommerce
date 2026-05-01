@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Http\Controllers\AccountDeletionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +14,15 @@ use App\Models\User;
 Route::get('/', function () {
     return redirect('/users');
 });
+
+/*
+|--------------------------------------------------------------------------
+| ACCOUNT DELETION (PUBLIC ROUTES - NO AUTH REQUIRED)
+|--------------------------------------------------------------------------
+*/
+Route::get('/account-delete/{token}', [AccountDeletionController::class, 'showConfirmationForm']);
+Route::post('/account-delete/{token}/confirm', [AccountDeletionController::class, 'confirmDelete']);
+Route::post('/account-delete/{token}/cancel', [AccountDeletionController::class, 'cancelDelete']);
 
 
 /*
@@ -74,6 +84,10 @@ Route::match(['get','post'],'/users', function(Request $request){
 
         <td>
         <input type='text' name='email' value='$user->email'>
+        </td>
+
+        <td data-role='$user->role'>
+        $user->role
         </td>
 
         <td>
@@ -179,6 +193,7 @@ Note: Điền thông tin mới vào từng dòng trong table và bấm <b>Update
 <th>ID</th>
 <th>Name</th>
 <th>Email</th>
+<th>Role</th>
 <th>Actions</th>
 </tr>
 

@@ -37,5 +37,3 @@ RUN sed -ri -e 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.c
 
 # Lệnh chạy server (Kèm xóa cache)
 CMD php artisan optimize:clear && apache2-foreground
-
-RUN sed -i "s/80/\${PORT}/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf

@@ -16,6 +16,12 @@ class Shop extends Model
         return $this->belongsTo(User::class);
     }
 
+    // Alias để dễ sử dụng
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     // Quan hệ: 1 Shop có nhiều Sản phẩm
     public function products()
     {

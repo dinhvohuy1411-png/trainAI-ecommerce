@@ -13,7 +13,8 @@ class Coupon extends Model
     protected $fillable = [
         'shop_id', 
         'code', 
-        'discount_type',      
+        'discount_type',   
+        'membership_tier_id',   
         'discount_value', 
         'min_order_value', 
         'max_discount_value', 
@@ -61,4 +62,8 @@ class Coupon extends Model
             $this->decrement('usage_limit');
         }
     }
+    public function tier()
+{
+    return $this->belongsTo(MembershipTier::class, 'membership_tier_id');
+}
 }

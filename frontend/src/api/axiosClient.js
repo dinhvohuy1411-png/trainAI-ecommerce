@@ -2,8 +2,7 @@ import axios from 'axios'
 
 const axiosClient = axios.create({
   //http://localhost:8000/api/
-  //https://shopii-backend-latest.onrender.com/api/
-  // https://trainai-ecommerce.onrender.com/api/
+  //https://trainai-ecommerce.onrender.com/api/
   baseURL: 'https://trainai-ecommerce.onrender.com/api/',
 
   headers: {
@@ -31,6 +30,7 @@ axiosClient.interceptors.response.use(
 
     if (response && response.status === 401) {
       localStorage.removeItem('ACCESS_TOKEN')
+      localStorage.removeItem('USER_INFO')
       window.location.href = '/login'
     }
 

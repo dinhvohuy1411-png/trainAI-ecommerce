@@ -16,7 +16,11 @@ class ShopController extends Controller
     {
         $user = auth()->user();
 
-        if (!in_array($user->role, ['user', 'seller'])) {
+        // Support multiple roles separated by comma
+        $roles = array_map('trim', explode(',', $user->role));
+        $isAllowed = in_array('user', $roles) || in_array('seller', $roles) || in_array($user->role, ['user', 'seller']);
+        
+        if (!$isAllowed) {
             return response()->json([
                 'message' => 'Không có quyền'
             ], 403);
@@ -74,6 +78,14 @@ class ShopController extends Controller
             'ward' => $addr['ward']
         ]);
         $user->phone=$addr['phone'];
+        
+        // Update user role to include seller
+        $roles = explode(',', $user->role);
+        $roles = array_map('trim', $roles);
+        if (!in_array('seller', $roles)) {
+            $roles[] = 'seller';
+            $user->role = implode(',', $roles);
+        }
         $user->save();
         return response()->json([
             'message' => 'Đăng ký shop thành công, vui lòng chờ duyệt',
@@ -91,7 +103,7 @@ class ShopController extends Controller
         $shop = Shop::where('user_id', $user->id)
             ->with([
                 'products.product_images',
-                'products.skus',
+                'products.skus.attributeValues.attribute', // 🚀 ĐIỂM NÂNG CẤP LÀ Ở ĐÂY!
                 'products.category'
             ])
             ->first();

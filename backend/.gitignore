@@ -21,3 +21,7 @@ backend/set_admin.php
 backend/set_admin.sql
 frontend/taita/
 ai-service/
+backend/venv/
+venv/
+*.dll
+*.lib

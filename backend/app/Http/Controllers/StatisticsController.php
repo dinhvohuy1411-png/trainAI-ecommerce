@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\Product;
+use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 use App\Models\Shop;
@@ -16,7 +18,11 @@ class StatisticsController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->role !== 'admin') {
+        // Support multiple roles
+        $roles = array_map('trim', explode(',', $user->role));
+        $isAdmin = in_array('admin', $roles) || $user->role === 'admin';
+
+        if (!$isAdmin) {
             return response()->json([
                 'message' => 'Không có quyền'
             ], 403);
@@ -38,10 +44,21 @@ class StatisticsController extends Controller
             ->limit(5)
             ->get();
 
+        // Seller có nhiều đơn nhất
+        $topSeller = DB::table('orders')
+            ->join('shops', 'orders.shop_id', '=', 'shops.id')
+            ->join('users', 'shops.user_id', '=', 'users.id')
+            ->select('users.id', 'users.name', 'users.email', DB::raw('COUNT(orders.id) as total_orders'))
+            ->groupBy('users.id', 'users.name', 'users.email')
+            ->orderByDesc('total_orders')
+            ->limit(1)
+            ->first();
+
         return response()->json([
             'total_revenue' => $totalRevenue ?? 0,
             'total_orders' => $totalOrders ?? 0,
-            'best_sellers' => $bestSellers ?? []
+            'best_sellers' => $bestSellers ?? [],
+            'top_seller' => $topSeller ?? null
         ]);
     }
 

@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +24,9 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'deletion_token',
+        'deletion_expires_at',
+        'last_login_at',
     ];
 
     /**
@@ -52,4 +56,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProductReview::class, 'user_id');
     }
+    public function membership()
+    {
+        return $this->hasOne(UserMembership::class);
+    }
+ public function currentTier()
+{
+    return optional($this->membership)->tier;
+    
+}
+
+public function getDiscountRate()
+{
+    if ($this->membership && $this->membership->tier) {
+        return $this->membership->tier->discount_percent;
+    }
+    
+    return 0;
+}
 }

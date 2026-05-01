@@ -1,17 +1,26 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import axiosClient from "../api/axiosClient";
-import statisticsApi from "../api/statisticsApi";
-import "./CategoriesPage.css";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom'; // Thêm import này để không bị lỗi Link
+import axiosClient from '../api/axiosClient';
+import statisticsApi from '../api/statisticsApi';
+import './CategoriesPage.css';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState({
-    name: "",
-    slug: "",
-    parent_id: "",
-    image: "",
+    name: '',
+    slug: '',
+    parent_id: '',
+    image: '',
   });
   const [editingId, setEditingId] = useState(null);
   const [showReport, setShowReport] = useState(false);
@@ -19,17 +28,17 @@ export default function CategoriesPage() {
   const [loadingStats, setLoadingStats] = useState(false);
 
   useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const res = await axiosClient.get("/categories");
-        setCategories(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    loadCategories();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axiosClient.get('/categories');
+      setCategories(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchStatistics = async () => {
     try {
@@ -38,7 +47,7 @@ export default function CategoriesPage() {
       setStatistics(res.data);
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi tải dữ liệu thống kê");
+      alert('Lỗi khi tải dữ liệu thống kê');
     } finally {
       setLoadingStats(false);
     }
@@ -49,11 +58,6 @@ export default function CategoriesPage() {
       fetchStatistics();
     }
     setShowReport(!showReport);
-  };
-
-  const fetchCategories = async () => {
-    const res = await axiosClient.get("/categories");
-    setCategories(res.data);
   };
 
   const handleChange = (e) => {
@@ -73,272 +77,170 @@ export default function CategoriesPage() {
         await axiosClient.put(`/categories/${editingId}`, data);
         setEditingId(null);
       } else {
-        await axiosClient.post("/categories", data);
+        await axiosClient.post('/categories', data);
       }
 
-      setForm({ name: "", slug: "", parent_id: "", image: "" });
+      setForm({ name: '', slug: '', parent_id: '', image: '' });
       fetchCategories();
+      alert('Thao tác thành công!');
     } catch (error) {
       console.error(error.response?.data || error);
+      alert('Có lỗi xảy ra');
     }
   };
 
   const handleEdit = (cat) => {
     setForm({
-      name: cat.name || "",
-      slug: cat.slug || "",
-      parent_id: cat.parent_id || "",
-      image: cat.image || "",
+      name: cat.name || '',
+      slug: cat.slug || '',
+      parent_id: cat.parent_id || '',
+      image: cat.image || '',
     });
     setEditingId(cat.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn xóa?")) return;
+    if (!window.confirm('Bạn có chắc muốn xóa?')) return;
     await axiosClient.delete(`/categories/${id}`);
     fetchCategories();
   };
 
   return (
-   <div className="page">
-  <div style={{ display: 'flex', minHeight: '100vh', background: '#f9f8fc' }}>
-    
-    {/* ===== SIDEBAR MENU (TRÁI) ===== */}
-    <div style={{ 
-      width: '250px', 
-      background: '#1e293b', 
-      color: 'white', 
-      padding: '20px',
-      height: '100vh',              // ✅ FIX CHÍNH
-      position: 'sticky',           // ✅ đứng yên khi scroll nhẹ
-      top: 0
-    }}>
-      <h2 style={{ color: 'white', marginBottom: '30px', fontSize: '22px' }}>
-        🏢 Admin Panel
-      </h2>
+    <div>
+      {/* ===== MAIN CONTENT ===== */}
+      <div>
+        <h2 className="title" style={{ marginTop: 0, marginBottom: '20px', fontSize: '22px', color: '#1e293b' }}>Quản lý Category</h2>
 
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-        <li style={{ marginBottom: '10px' }}>
-          <Link 
-            to="/admin/shops" 
-            style={{ 
-              display: 'block',
-              padding: '12px 15px', 
-              background: '#3b82f6', 
-              color: 'white',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              transition: 'background 0.3s'
-            }}
-            onMouseEnter={(e) => e.target.style.background = '#2563eb'}
-            onMouseLeave={(e) => e.target.style.background = '#3b82f6'}
-          >
-                🏪 Duyệt Gian Hàng
-              </Link>
-            </li>
-            <li>
-              <button 
-                onClick={handleReportClick}
-                style={{ 
-                  width: '100%',
-                  padding: '12px 15px', 
-                  background: showReport ? '#10b981' : '#6b7280', 
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  transition: 'background 0.3s'
-                }}
-                onMouseEnter={(e) => e.target.style.background = showReport ? '#059669' : '#4b5563'}
-                onMouseLeave={(e) => e.target.style.background = showReport ? '#10b981' : '#6b7280'}
-              >
-                📊 {showReport ? 'Ẩn Báo Cáo' : 'Xem Báo Cáo'}
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        {/* ===== MAIN CONTENT (PHẢI) ===== */}
-        <div style={{ flex: 1, padding: '40px' }}>
-          <h2 className="title" style={{ marginTop: 0, marginBottom: '20px' }}>Quản lý Category</h2>
-
-        {/* ===== BÁNG CÁO ===== */}
+        {/* ===== BÁO CÁO THỐNG KÊ ===== */}
         {showReport && (
           <div style={{ background: '#f9fafb', padding: '30px', borderRadius: '12px', marginBottom: '30px', border: '1px solid #e5e7eb' }}>
             <h3 style={{ marginTop: 0, color: '#1f2937' }}>📊 Báo Cáo Thống Kê Sàn</h3>
-            
             {loadingStats ? (
               <p style={{ textAlign: 'center', color: '#6b7280' }}>Đang tải dữ liệu...</p>
             ) : statistics ? (
               <div>
-                {/* Dữ liệu chữ số */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-                  <div style={{ background: 'white', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '1px solid #e5e7eb' }}>
-                    <p style={{ color: '#6b7280', margin: '0 0 10px 0', fontSize: '14px' }}>Tổng Doanh Thu</p>
-                    <h2 style={{ margin: 0, color: '#059669', fontSize: '28px' }}>
-                      {(statistics.total_revenue || 0).toLocaleString()} VNĐ
-                    </h2>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                  <div style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', ...statCardStyle }}>
+                    <p style={statLabelStyle}>👑 SELLER NHIỀU ĐƠN NHẤT</p>
+                    {statistics.top_seller ? (
+                      <>
+                        <h2 style={{ fontSize: '20px', margin: '5px 0' }}>{statistics.top_seller.name}</h2>
+                        <h3 style={{ color: '#ffd700', fontSize: '28px' }}>{statistics.top_seller.total_orders} đơn</h3>
+                      </>
+                    ) : <p>N/A</p>}
                   </div>
-                  <div style={{ background: 'white', padding: '20px', borderRadius: '8px', textAlign: 'center', border: '1px solid #e5e7eb' }}>
-                    <p style={{ color: '#6b7280', margin: '0 0 10px 0', fontSize: '14px' }}>Tổng Số Đơn Hàng</p>
-                    <h2 style={{ margin: 0, color: '#0891b2', fontSize: '28px' }}>
-                      {statistics.total_orders || 0} đơn
-                    </h2>
+
+                  <div style={{ background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', ...statCardStyle }}>
+                    <p style={statLabelStyle}>🔥 SẢN PHẨM BÁN CHẠY</p>
+                    {statistics.best_sellers?.[0] ? (
+                      <>
+                        <h2 style={{ fontSize: '18px', margin: '5px 0' }}>{statistics.best_sellers[0].name}</h2>
+                        <h3 style={{ fontSize: '28px' }}>{statistics.best_sellers[0].total_sold} cái</h3>
+                      </>
+                    ) : <p>N/A</p>}
+                  </div>
+
+                  <div style={{ background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', ...statCardStyle }}>
+                    <p style={statLabelStyle}>💰 TỔNG DOANH THU</p>
+                    <h2 style={{ fontSize: '22px' }}>{(statistics.total_revenue || 0).toLocaleString()} VNĐ</h2>
+                    <p>{statistics.total_orders || 0} đơn hàng</p>
                   </div>
                 </div>
 
-                {/* Biểu đồ cột */}
-                <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-                  <h4 style={{ marginTop: 0, color: '#1f2937' }}>Biểu Đồ Thống Kê</h4>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={[
-                      {
-                        name: 'Thống Kê',
-                        'Doanh thu (Triệu)': Math.round((statistics.total_revenue || 0) / 1000000),
-                        'Số đơn hàng': statistics.total_orders || 0,
-                      }
-                    ]}>
+                <div style={{ height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={[{ name: 'Sàn', DoanhThu: (statistics.total_revenue || 0) / 1000000, DonHang: statistics.total_orders || 0 }]}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => value.toLocaleString()} />
+                      <Tooltip />
                       <Legend />
-                      <Bar dataKey="Doanh thu (Triệu)" fill="#059669" />
-                      <Bar dataKey="Số đơn hàng" fill="#0891b2" />
+                      <Bar dataKey="DoanhThu" name="Doanh thu (Triệu)" fill="#059669" />
+                      <Bar dataKey="DonHang" name="Số đơn hàng" fill="#0891b2" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-
-                {/* Sản phẩm bán chạy */}
-                {statistics.best_sellers && statistics.best_sellers.length > 0 && (
-                  <div style={{ background: 'white', padding: '20px', borderRadius: '8px', border: '1px solid #e5e7eb', marginTop: '20px' }}>
-                    <h4 style={{ marginTop: 0, color: '#1f2937' }}>🔥 Sản Phẩm Bán Chạy</h4>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead>
-                        <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                          <th style={{ padding: '10px', textAlign: 'left' }}>Tên Sản Phẩm</th>
-                          <th style={{ padding: '10px', textAlign: 'right' }}>Số Lượng Bán</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {statistics.best_sellers.map((item, idx) => (
-                          <tr key={idx} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                            <td style={{ padding: '10px' }}>{item.name}</td>
-                            <td style={{ padding: '10px', textAlign: 'right', fontWeight: 'bold', color: '#059669' }}>
-                              {item.total_sold} cái
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
               </div>
-            ) : (
-              <p style={{ textAlign: 'center', color: '#ef4444' }}>Không thể tải dữ liệu thống kê</p>
-            )}
+            ) : <p>Không có dữ liệu</p>}
           </div>
         )}
 
-        <div className="form">
-          <input
-            name="name"
-            placeholder="Tên"
-            value={form.name}
-            onChange={handleChange}
-          />
-          <input
-            name="slug"
-            placeholder="Slug"
-            value={form.slug}
-            onChange={handleChange}
-          />
-          <input
-            name="parent_id"
-            placeholder="Parent ID"
-            value={form.parent_id}
-            onChange={handleChange}
-          />
-          <input
-            name="image"
-            placeholder="Image URL"
-            value={form.image}
-            onChange={handleChange}
-          />
-
-          <button onClick={handleSubmit} className="submit-btn">
-            {editingId ? "Cập nhật" : "Thêm"}
+        {/* ===== FORM THÊM / SỬA ===== */}
+        <div className="form" style={{ marginBottom: '30px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <input name="name" placeholder="Tên Category" value={form.name} onChange={handleChange} style={inputStyle} />
+          <input name="slug" placeholder="Slug (Đường dẫn)" value={form.slug} onChange={handleChange} style={inputStyle} />
+          <input name="parent_id" placeholder="Parent ID" value={form.parent_id} onChange={handleChange} style={inputStyle} />
+          <input name="image" placeholder="Link ảnh URL" value={form.image} onChange={handleChange} style={inputStyle} />
+          <button onClick={handleSubmit} className="submit-btn" style={{ gridColumn: 'span 2', padding: '12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+            {editingId ? 'Cập Nhật Danh Mục' : 'Thêm Danh Mục Mới'}
           </button>
         </div>
 
+        {/* ===== BẢNG DANH SÁCH ===== */}
         <div className="table-wrapper">
-          <table>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr>
-                <th>ID</th>
-                <th>Tên</th>
-                <th>Slug</th>
-                <th>Parent</th>
-                <th>Image</th>
-                <th>Hành động</th>
+              <tr style={{ background: '#f3f4f6', textAlign: 'left' }}>
+                <th style={thStyle}>ID</th>
+                <th style={thStyle}>Tên</th>
+                <th style={thStyle}>Slug</th>
+                <th style={thStyle}>Parent</th>
+                <th style={thStyle}>Ảnh</th>
+                <th style={thStyle}>Hành động</th>
               </tr>
             </thead>
-
             <tbody>
               {categories.map((cat) => (
-                <tr key={cat.id}>
-                  <td>{cat.id}</td>
-                  <td>{cat.name}</td>
-                  <td>{cat.slug}</td>
-                  <td>{cat.parent_id || "-"}</td>
-                  <td>
-                    {cat.image ? (
-                      <img
-                        src={cat.image}
-                        alt=""
-                        width="40"
-                        height="40"
-                        style={{ objectFit: "cover", borderRadius: "4px" }}
-                      />
-                    ) : (
-                      "-"
-                    )}
+                <tr key={cat.id} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                  <td style={tdStyle}>{cat.id}</td>
+                  <td style={tdStyle}><strong>{cat.name}</strong></td>
+                  <td style={tdStyle}>{cat.slug}</td>
+                  <td style={tdStyle}>{cat.parent_id || '-'}</td>
+                  <td style={tdStyle}>
+                    {cat.image && <img src={cat.image} width="40" height="40" style={{ borderRadius: '4px' }} alt="" />}
                   </td>
-
-                  <td>
-                    <div className="actions">
-                      <button
-                        onClick={() => handleEdit(cat)}
-                        className="btn-edit"
-                      >
-                        Sửa
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(cat.id)}
-                        className="btn-delete"
-                      >
-                        Xóa
-                      </button>
-                    </div>
+                  <td style={tdStyle}>
+                    <button onClick={() => handleEdit(cat)} style={{ marginRight: '10px', color: '#3b82f6', border: 'none', background: 'none', cursor: 'pointer' }}>Sửa</button>
+                    <button onClick={() => handleDelete(cat.id)} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}>Xóa</button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-
-          {categories.length === 0 && (
-            <p style={{ padding: "20px", textAlign: "center", color: "#999" }}>
-              Không có dữ liệu
-            </p>
-          )}
-        </div>
         </div>
       </div>
     </div>
   );
 }
+
+// Styles hỗ trợ
+const sidebarLinkStyle = {
+  display: 'block',
+  padding: '12px 15px',
+  background: '#3b82f6',
+  color: 'white',
+  borderRadius: '8px',
+  textDecoration: 'none',
+  fontWeight: 'bold',
+  textAlign: 'center',
+};
+
+const statCardStyle = {
+  padding: '20px',
+  borderRadius: '12px',
+  textAlign: 'center',
+  color: 'white',
+  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+};
+
+const statLabelStyle = {
+  margin: '0 0 10px 0',
+  fontSize: '12px',
+  fontWeight: 'bold',
+  opacity: 0.9,
+};
+
+const inputStyle = { padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px' };
+const thStyle = { padding: '12px', borderBottom: '2px solid #e5e7eb' };
+const tdStyle = { padding: '12px' };

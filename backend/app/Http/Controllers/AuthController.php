@@ -66,6 +66,10 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Cập nhật last_login_at khi đăng nhập thành công
+        $user->last_login_at = now();
+        $user->save();
+
         $token = $user->createToken('myapptoken')->plainTextToken;
 
         return response()->json([

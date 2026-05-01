@@ -14,4 +14,13 @@ class ProductSku extends Model
     {
         return $this->belongsTo(Product::class);
     }
+    public function attributeValues()
+    {
+        return $this->belongsToMany(
+            ProductAttributeValue::class, 
+            'sku_values', 
+            'product_sku_id', 
+            'product_attribute_value_id'
+        );
+    }
 }

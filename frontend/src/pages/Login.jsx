@@ -26,9 +26,13 @@ export default function Login() {
       const userRole = response.data.user.role
 
       if (userRole === 'seller' || userRole === 2) {
-        navigate('/seller')
+        navigate('/shop')
       } else if (userRole === 'admin' || userRole === 1) {
-        navigate('/categories')
+
+        navigate('/admin/shops')
+
+        navigate('/admin/categories')
+
       } else {
         navigate('/')
       }

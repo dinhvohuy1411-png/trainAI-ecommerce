@@ -15,7 +15,9 @@ class SellerMiddleware
         }
 
         $role = $user->role;
-        $isSeller = $role === 'seller' || $role === 2 || $role === '2';
+        // Support multiple roles separated by comma (e.g., "user,seller" or just "seller")
+        $roles = array_map('trim', explode(',', $role));
+        $isSeller = in_array('seller', $roles) || $role === 'seller' || $role === 2 || $role === '2';
 
         if (!$isSeller) {
             return response()->json(['message' => 'Unauthorized. Seller only.'], 403);

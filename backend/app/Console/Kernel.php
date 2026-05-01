@@ -15,7 +15,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Tự động gửi email xóa tài khoản cho user không hoạt động 30 ngày (chạy mỗi ngày lúc 2 giờ sáng)
+        $schedule->command('users:auto-delete-inactive 30')
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/auto-delete-users.log'));
     }
 
     /**
